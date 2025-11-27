@@ -1,0 +1,2 @@
+now lets setup a 2 page setup, they should be changing without page reload.
+We should have a navbar with tab selection
