@@ -5,7 +5,7 @@ import { ViewTransitions } from 'astro:transitions';
 
 interface Props {
   title: string;
-  activeTab?: 'home' | 'about';
+  activeTab?: 'home' | 'about' | 'settings';
 }
 
 const { title, activeTab = 'home' } = Astro.props;
@@ -54,6 +54,17 @@ const { title, activeTab = 'home' } = Astro.props;
               ]}
             >
               About
+            </a>
+            <a
+              href="/settings"
+              class:list={[
+                'px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200',
+                activeTab === 'settings'
+                  ? 'bg-gray-900 text-white'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              ]}
+            >
+              Settings
             </a>
           </div>
         </div>

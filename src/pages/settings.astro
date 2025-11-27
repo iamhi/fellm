@@ -1,0 +1,175 @@
+---
+// src/pages/settings.astro
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Settings - Fellm" activeTab="settings">
+  <div class="min-h-[calc(100vh-3.5rem)] py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-3xl mx-auto space-y-6">
+      <!-- Header -->
+      <div class="bg-white rounded-lg border border-gray-200 p-6 sm:p-8 shadow-sm">
+        <h1 class="text-3xl sm:text-4xl font-semibold text-gray-900 mb-2">
+          Settings
+        </h1>
+        <p class="text-gray-600">
+          Manage your preferences and account settings.
+        </p>
+      </div>
+
+      <!-- Appearance Settings -->
+      <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+          </svg>
+          Appearance
+        </h2>
+        
+        <div class="space-y-4">
+          <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+            <div>
+              <label for="theme" class="text-sm font-medium text-gray-900 block mb-1">
+                Theme
+              </label>
+              <p class="text-xs text-gray-500">Choose your interface theme</p>
+            </div>
+            <select 
+              id="theme" 
+              class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            >
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="system">System</option>
+            </select>
+          </div>
+
+          <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+            <div>
+              <label for="fontSize" class="text-sm font-medium text-gray-900 block mb-1">
+                Font Size
+              </label>
+              <p class="text-xs text-gray-500">Adjust text size</p>
+            </div>
+            <select 
+              id="fontSize" 
+              class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+            >
+              <option value="small">Small</option>
+              <option value="medium" selected>Medium</option>
+              <option value="large">Large</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chat Settings -->
+      <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+          </svg>
+          Chat Preferences
+        </h2>
+        
+        <div class="space-y-4">
+          <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+            <div class="flex-1">
+              <label for="soundEffects" class="text-sm font-medium text-gray-900 block mb-1">
+                Sound Effects
+              </label>
+              <p class="text-xs text-gray-500">Play sounds for new messages</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="soundEffects" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gray-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+            <div class="flex-1">
+              <label for="autoSave" class="text-sm font-medium text-gray-900 block mb-1">
+                Auto-save Conversations
+              </label>
+              <p class="text-xs text-gray-500">Automatically save chat history</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="autoSave" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gray-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+            </label>
+          </div>
+
+          <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+            <div class="flex-1">
+              <label for="enterToSend" class="text-sm font-medium text-gray-900 block mb-1">
+                Enter to Send
+              </label>
+              <p class="text-xs text-gray-500">Press Enter to send messages</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="enterToSend" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gray-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-900"></div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data & Privacy -->
+      <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+          Data & Privacy
+        </h2>
+        
+        <div class="space-y-3">
+          <button class="w-full text-left px-4 py-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 flex items-center justify-between">
+            <span>Export Chat History</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+          </button>
+
+          <button class="w-full text-left px-4 py-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 flex items-center justify-between">
+            <span>Clear All Data</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-3">
+        <button class="flex-1 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium">
+          Save Changes
+        </button>
+        <a 
+          href="/" 
+          class="flex-1 px-6 py-3 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium text-center"
+        >
+          Cancel
+        </a>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Save settings to localStorage (demo)
+  const saveBtn = document.querySelector('button[class*="bg-gray-900"]');
+  
+  saveBtn?.addEventListener('click', () => {
+    // Get all form values
+    const theme = (document.getElementById('theme') as HTMLSelectElement)?.value;
+    const fontSize = (document.getElementById('fontSize') as HTMLSelectElement)?.value;
+    const soundEffects = (document.getElementById('soundEffects') as HTMLInputElement)?.checked;
+    const autoSave = (document.getElementById('autoSave') as HTMLInputElement)?.checked;
+    const enterToSend = (document.getElementById('enterToSend') as HTMLInputElement)?.checked;
+
+    // Show confirmation
+    alert('Settings saved successfully!');
+    
+    console.log('Settings:', { theme, fontSize, soundEffects, autoSave, enterToSend });
+  });
+</script>
