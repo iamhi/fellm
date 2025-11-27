@@ -1,0 +1,4 @@
+Lets update the style.
+The title of the project is Fellm
+The navigation bar should have simplistic design and it should incorporate the tab switching buttons.
+The chat component should have a outline frame it should look good for desktop, laptop, tablet and mobile.
