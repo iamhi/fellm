@@ -2,40 +2,59 @@
 // src/components/Chat.astro
 ---
 
-<div class="flex flex-col h-full bg-white">
-  <div class="flex-none bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 shadow-lg">
+<div class="h-full flex flex-col bg-white rounded-lg border-2 border-gray-200 shadow-sm overflow-hidden">
+  
+  <!-- Chat Header -->
+  <div class="flex-none border-b border-gray-200 px-4 sm:px-6 py-4">
     <div class="flex items-center justify-between">
-      <div>
-        <h2 class="text-xl font-bold">Chat Assistant</h2>
-        <p class="text-sm text-blue-100">Online</p>
+      <div class="flex items-center gap-3">
+        <button id="toggleSidebar" class="lg:hidden text-gray-600 hover:text-gray-900">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+        <div class="flex items-center gap-2">
+          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+          <span class="text-sm font-medium text-gray-700">Active</span>
+        </div>
       </div>
-      <button id="clearChat" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium">
-        Clear Chat
+      <button 
+        id="clearChat" 
+        class="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+      >
+        Clear
       </button>
     </div>
   </div>
 
-  <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+  <!-- Messages Container -->
+  <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+    <!-- Welcome message -->
     <div class="flex justify-start">
-      <div class="max-w-[70%] bg-white rounded-2xl rounded-tl-sm shadow-md p-4">
-        <p class="text-gray-800">👋 Hello! I'm your chat assistant. How can I help you today?</p>
-        <span class="text-xs text-gray-400 mt-2 block">Just now</span>
+      <div class="max-w-[85%] sm:max-w-[75%] lg:max-w-[60%]">
+        <div class="bg-gray-100 rounded-2xl rounded-tl-md px-4 py-3">
+          <p class="text-gray-800 text-sm sm:text-base">
+            👋 Welcome to Fellm. How can I assist you today?
+          </p>
+        </div>
+        <span class="text-xs text-gray-400 mt-1.5 ml-1 block">Just now</span>
       </div>
     </div>
   </div>
 
-  <div class="flex-none border-t border-gray-200 bg-white p-4">
-    <form id="chatForm" class="flex gap-2">
+  <!-- Input Area -->
+  <div class="flex-none border-t border-gray-200 p-4 sm:p-6">
+    <form id="chatForm" class="flex gap-2 sm:gap-3">
       <input
         type="text"
         id="messageInput"
-        placeholder="Type your message..."
-        class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        placeholder="Type a message..."
+        class="flex-1 px-4 py-2.5 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
         autocomplete="off"
       />
       <button
         type="submit"
-        class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        class="px-4 sm:px-6 py-2.5 sm:py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm sm:text-base font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Send
       </button>
@@ -48,6 +67,10 @@
   const chatForm = document.getElementById('chatForm');
   const messageInput = document.getElementById('messageInput') as HTMLInputElement;
   const clearChatBtn = document.getElementById('clearChat');
+  const toggleSidebarBtn = document.getElementById('toggleSidebar');
+
+  let currentChatId = 1;
+  const chatHistories = new Map<number, string>();
 
   function scrollToBottom() {
     if (messagesContainer) {
@@ -62,6 +85,36 @@
     });
   }
 
+  function saveChatHistory() {
+    if (messagesContainer) {
+      chatHistories.set(currentChatId, messagesContainer.innerHTML);
+    }
+  }
+
+  function loadChatHistory(chatId: number) {
+    if (messagesContainer) {
+      const history = chatHistories.get(chatId);
+      if (history) {
+        messagesContainer.innerHTML = history;
+      } else {
+        // Load default welcome message
+        messagesContainer.innerHTML = `
+          <div class="flex justify-start">
+            <div class="max-w-[85%] sm:max-w-[75%] lg:max-w-[60%]">
+              <div class="bg-gray-100 rounded-2xl rounded-tl-md px-4 py-3">
+                <p class="text-gray-800 text-sm sm:text-base">
+                  👋 Welcome to Fellm. How can I assist you today?
+                </p>
+              </div>
+              <span class="text-xs text-gray-400 mt-1.5 ml-1 block">Just now</span>
+            </div>
+          </div>
+        `;
+      }
+      scrollToBottom();
+    }
+  }
+
   function addMessage(text: string, isUser: boolean) {
     if (!messagesContainer) return;
 
@@ -69,13 +122,15 @@
     messageDiv.className = `flex ${isUser ? 'justify-end' : 'justify-start'} animate-fadeIn`;
     
     messageDiv.innerHTML = `
-      <div class="max-w-[70%] ${
-        isUser 
-          ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm' 
-          : 'bg-white text-gray-800 rounded-2xl rounded-tl-sm shadow-md'
-      } p-4">
-        <p>${text}</p>
-        <span class="text-xs ${isUser ? 'text-blue-100' : 'text-gray-400'} mt-2 block">
+      <div class="max-w-[85%] sm:max-w-[75%] lg:max-w-[60%]">
+        <div class="${
+          isUser 
+            ? 'bg-gray-900 text-white rounded-2xl rounded-tr-md' 
+            : 'bg-gray-100 text-gray-800 rounded-2xl rounded-tl-md'
+        } px-4 py-3">
+          <p class="text-sm sm:text-base">${text}</p>
+        </div>
+        <span class="text-xs ${isUser ? 'text-gray-400 text-right' : 'text-gray-400'} mt-1.5 ml-1 block">
           ${getCurrentTime()}
         </span>
       </div>
@@ -83,6 +138,22 @@
 
     messagesContainer.appendChild(messageDiv);
     scrollToBottom();
+    saveChatHistory();
+
+    // Update sidebar with first message as title
+    if (isUser) {
+      const messages = messagesContainer.querySelectorAll('.flex');
+      if (messages.length === 2) { // First user message (after welcome)
+        const shortTitle = text.length > 30 ? text.substring(0, 30) + '...' : text;
+        window.dispatchEvent(new CustomEvent('chatUpdate', {
+          detail: { 
+            chatId: currentChatId, 
+            title: shortTitle,
+            lastMessage: text
+          }
+        }));
+      }
+    }
   }
 
   function simulateBotResponse(userMessage: string) {
@@ -112,16 +183,20 @@
   });
 
   clearChatBtn?.addEventListener('click', () => {
-    if (messagesContainer) {
-      messagesContainer.innerHTML = `
-        <div class="flex justify-start">
-          <div class="max-w-[70%] bg-white rounded-2xl rounded-tl-sm shadow-md p-4">
-            <p class="text-gray-800">👋 Hello! I'm your chat assistant. How can I help you today?</p>
-            <span class="text-xs text-gray-400 mt-2 block">Just now</span>
-          </div>
-        </div>
-      `;
-    }
+    loadChatHistory(currentChatId);
+    chatHistories.delete(currentChatId);
+  });
+
+  // Listen for chat switches from sidebar
+  window.addEventListener('chatSwitch', ((e: CustomEvent) => {
+    saveChatHistory();
+    currentChatId = e.detail.chatId;
+    loadChatHistory(currentChatId);
+  }) as EventListener);
+
+  // Toggle sidebar on mobile
+  toggleSidebarBtn?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('toggleSidebar'));
   });
 
   messageInput?.focus();
@@ -144,20 +219,19 @@
   }
 
   #messagesContainer::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
 
   #messagesContainer::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
+    background: transparent;
   }
 
   #messagesContainer::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
+    background: #d1d5db;
     border-radius: 10px;
   }
 
   #messagesContainer::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+    background: #9ca3af;
   }
 </style>

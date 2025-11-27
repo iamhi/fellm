@@ -1,20 +1,70 @@
 ---
 // src/pages/index.astro
 import BaseLayout from '../layouts/BaseLayout.astro';
+import ChatSidebar from '../components/ChatSidebar.astro';
 import Chat from '../components/Chat.astro';
 ---
 
-<BaseLayout title="Chat - My Astro App" activeTab="chat">
-  <!-- Fullscreen Chat Container -->
-  <div class="fixed inset-0 top-16 bottom-0 left-0 right-0">
-    <Chat />
+<BaseLayout title="Chat - Fellm" activeTab="home">
+  <div class="h-[calc(100vh-3.5rem)] p-4 sm:p-6 lg:p-8">
+    <div class="h-full max-w-7xl mx-auto flex gap-4">
+      <!-- Sidebar - Desktop -->
+      <aside id="sidebar" class="hidden lg:block w-72 flex-shrink-0">
+        <div class="h-full rounded-lg border-2 border-gray-200 shadow-sm overflow-hidden">
+          <ChatSidebar />
+        </div>
+      </aside>
+
+      <!-- Mobile Sidebar Overlay -->
+      <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden hidden">
+        <div class="fixed inset-y-0 left-0 w-72 bg-white shadow-xl">
+          <div class="h-full flex flex-col">
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+              <h2 class="text-lg font-semibold text-gray-900">Conversations</h2>
+              <button id="closeSidebar" class="text-gray-600 hover:text-gray-900">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="flex-1 overflow-hidden">
+              <ChatSidebar />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Chat Area -->
+      <main class="flex-1 min-w-0">
+        <Chat />
+      </main>
+    </div>
   </div>
 </BaseLayout>
 
-<style>
-  /* Override the default main padding for fullscreen */
-  :global(main) {
-    padding: 0 !important;
-    max-width: 100% !important;
-  }
-</style>
+<script>
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  const closeSidebarBtn = document.getElementById('closeSidebar');
+
+  // Toggle sidebar on mobile
+  window.addEventListener('toggleSidebar', () => {
+    sidebarOverlay?.classList.toggle('hidden');
+  });
+
+  // Close sidebar
+  closeSidebarBtn?.addEventListener('click', () => {
+    sidebarOverlay?.classList.add('hidden');
+  });
+
+  // Close on overlay click
+  sidebarOverlay?.addEventListener('click', (e) => {
+    if (e.target === sidebarOverlay) {
+      sidebarOverlay.classList.add('hidden');
+    }
+  });
+
+  // Close sidebar when switching chats on mobile
+  window.addEventListener('chatSwitch', () => {
+    sidebarOverlay?.classList.add('hidden');
+  });
+</script>
