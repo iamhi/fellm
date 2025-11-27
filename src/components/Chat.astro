@@ -1,0 +1,163 @@
+---
+// src/components/Chat.astro
+---
+
+<div class="flex flex-col h-full bg-white">
+  <div class="flex-none bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 shadow-lg">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-bold">Chat Assistant</h2>
+        <p class="text-sm text-blue-100">Online</p>
+      </div>
+      <button id="clearChat" class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors text-sm font-medium">
+        Clear Chat
+      </button>
+    </div>
+  </div>
+
+  <div id="messagesContainer" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+    <div class="flex justify-start">
+      <div class="max-w-[70%] bg-white rounded-2xl rounded-tl-sm shadow-md p-4">
+        <p class="text-gray-800">👋 Hello! I'm your chat assistant. How can I help you today?</p>
+        <span class="text-xs text-gray-400 mt-2 block">Just now</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex-none border-t border-gray-200 bg-white p-4">
+    <form id="chatForm" class="flex gap-2">
+      <input
+        type="text"
+        id="messageInput"
+        placeholder="Type your message..."
+        class="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        autocomplete="off"
+      />
+      <button
+        type="submit"
+        class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Send
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const messagesContainer = document.getElementById('messagesContainer');
+  const chatForm = document.getElementById('chatForm');
+  const messageInput = document.getElementById('messageInput') as HTMLInputElement;
+  const clearChatBtn = document.getElementById('clearChat');
+
+  function scrollToBottom() {
+    if (messagesContainer) {
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+  }
+
+  function getCurrentTime() {
+    return new Date().toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit' 
+    });
+  }
+
+  function addMessage(text: string, isUser: boolean) {
+    if (!messagesContainer) return;
+
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `flex ${isUser ? 'justify-end' : 'justify-start'} animate-fadeIn`;
+    
+    messageDiv.innerHTML = `
+      <div class="max-w-[70%] ${
+        isUser 
+          ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm' 
+          : 'bg-white text-gray-800 rounded-2xl rounded-tl-sm shadow-md'
+      } p-4">
+        <p>${text}</p>
+        <span class="text-xs ${isUser ? 'text-blue-100' : 'text-gray-400'} mt-2 block">
+          ${getCurrentTime()}
+        </span>
+      </div>
+    `;
+
+    messagesContainer.appendChild(messageDiv);
+    scrollToBottom();
+  }
+
+  function simulateBotResponse(userMessage: string) {
+    setTimeout(() => {
+      const responses = [
+        "That's interesting! Tell me more.",
+        "I understand. How can I assist you further?",
+        "Thanks for sharing that with me!",
+        "Great question! Let me think about that...",
+        "I'm here to help. What else would you like to know?",
+      ];
+      
+      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+      addMessage(randomResponse, false);
+    }, 1000);
+  }
+
+  chatForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const message = messageInput.value.trim();
+    if (message) {
+      addMessage(message, true);
+      messageInput.value = '';
+      simulateBotResponse(message);
+    }
+  });
+
+  clearChatBtn?.addEventListener('click', () => {
+    if (messagesContainer) {
+      messagesContainer.innerHTML = `
+        <div class="flex justify-start">
+          <div class="max-w-[70%] bg-white rounded-2xl rounded-tl-sm shadow-md p-4">
+            <p class="text-gray-800">👋 Hello! I'm your chat assistant. How can I help you today?</p>
+            <span class="text-xs text-gray-400 mt-2 block">Just now</span>
+          </div>
+        </div>
+      `;
+    }
+  });
+
+  messageInput?.focus();
+</script>
+
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  #messagesContainer::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  #messagesContainer::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+
+  #messagesContainer::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+
+  #messagesContainer::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+</style>

@@ -1,0 +1,70 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+
+interface Props {
+  title: string;
+  activeTab?: 'chat' | 'settings';
+}
+
+const { title, activeTab = 'chat' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <ViewTransitions />
+  </head>
+  <body class="min-h-screen bg-gray-50">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+      <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+          <div class="flex items-center space-x-8">
+            <h1 class="text-xl font-bold text-gray-800">My Astro App</h1>
+            
+            <!-- Navigation Tabs -->
+            <div class="flex space-x-1">
+              <a
+                href="/"
+                class:list={[
+                  'px-4 py-2 rounded-lg transition-colors duration-200',
+                  activeTab === 'home'
+                    ? 'bg-blue-500 text-white'
+                    : 'text-gray-600 hover:bg-gray-100'
+                ]}
+              >
+                Home
+              </a>
+              <a
+                href="/about"
+                class:list={[
+                  'px-4 py-2 rounded-lg transition-colors duration-200',
+                  activeTab === 'about'
+                    ? 'bg-blue-500 text-white'
+                    : 'text-gray-600 hover:bg-gray-100'
+                ]}
+              >
+                About
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 py-8">
+      <slot />
+    </main>
+
+    <!-- Optional: Add page transition animations -->
+    <style>
+      @view-transition {
+        navigation: auto;
+      }
+    </style>
+  </body>
+</html>
