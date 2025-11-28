@@ -149,7 +149,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               id="ollamaUrl" 
               placeholder="http://localhost:11434" 
               value="http://localhost:11434"
-              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 bg-white"
             />
             <p class="text-xs text-gray-500 mt-1.5">URL of your local Ollama server</p>
           </div>
@@ -640,18 +640,38 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   const ollamaModels = document.getElementById('ollamaModels');
   const refreshOllamaBtn = document.getElementById('refreshOllamaModels');
   const modelSelect = document.getElementById('modelName') as HTMLSelectElement;
+  const openaiModels = document.getElementById('openaiModels');
+  const anthropicModels = document.getElementById('anthropicModels');
+  const googleModels = document.getElementById('googleModels');
 
   function updateProviderUI() {
     const provider = apiProvider.value;
     
+    // Hide all provider-specific sections first
+    apiKeySection?.classList.add('hidden');
+    ollamaEndpoint?.classList.add('hidden');
+    refreshOllamaBtn?.classList.add('hidden');
+    
+    // Hide all model groups
+    openaiModels?.classList.add('hidden');
+    anthropicModels?.classList.add('hidden');
+    googleModels?.classList.add('hidden');
+    ollamaModels?.classList.add('hidden');
+    
     if (provider === 'ollama') {
       // Show Ollama-specific fields
-      apiKeySection?.classList.add('hidden');
       ollamaEndpoint?.classList.remove('hidden');
       ollamaModels?.classList.remove('hidden');
       refreshOllamaBtn?.classList.remove('hidden');
       
-      // Select first Ollama model
+      // Enable Ollama URL input
+      const ollamaUrlInput = document.getElementById('ollamaUrl') as HTMLInputElement;
+      if (ollamaUrlInput) {
+        ollamaUrlInput.disabled = false;
+        ollamaUrlInput.readOnly = false;
+      }
+      
+      // Select first Ollama model if available
       const firstOllamaOption = ollamaModels?.querySelector('option');
       if (firstOllamaOption) {
         modelSelect.value = (firstOllamaOption as HTMLOptionElement).value;
@@ -659,26 +679,32 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     } else {
       // Show API key field for cloud providers
       apiKeySection?.classList.remove('hidden');
-      ollamaEndpoint?.classList.add('hidden');
-      ollamaModels?.classList.add('hidden');
-      refreshOllamaBtn?.classList.add('hidden');
       
-      // Select appropriate model for provider
+      // Show appropriate model group and select default
       if (provider === 'openai') {
+        openaiModels?.classList.remove('hidden');
         modelSelect.value = 'gpt-4';
       } else if (provider === 'anthropic') {
+        anthropicModels?.classList.remove('hidden');
         modelSelect.value = 'claude-3-opus';
       } else if (provider === 'google') {
+        googleModels?.classList.remove('hidden');
         modelSelect.value = 'gemini-pro';
+      } else if (provider === 'custom') {
+        openaiModels?.classList.remove('hidden');
+        modelSelect.value = 'gpt-4';
       }
     }
   }
 
-  apiProvider?.addEventListener('change', updateProviderUI);
+  apiProvider?.addEventListener('change', () => {
+    updateProviderUI();
+  });
 
   // Fetch available Ollama models
   async function fetchOllamaModels() {
-    const ollamaUrl = (document.getElementById('ollamaUrl') as HTMLInputElement)?.value || 'http://localhost:11434';
+    const ollamaUrlInput = document.getElementById('ollamaUrl') as HTMLInputElement;
+    const ollamaUrl = ollamaUrlInput?.value.trim() || 'http://localhost:11434';
     const btn = refreshOllamaBtn as HTMLButtonElement;
     
     if (!btn) return;
@@ -693,8 +719,16 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     `;
 
     try {
-      const response = await fetch(`${ollamaUrl}/api/tags`);
-      if (!response.ok) throw new Error('Failed to fetch models');
+      const response = await fetch(`${ollamaUrl}/api/tags`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
       
       const data = await response.json();
       
@@ -707,26 +741,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
           data.models.forEach((model: any) => {
             const option = document.createElement('option');
             option.value = model.name;
-            option.textContent = `${model.name} (${(model.size / 1e9).toFixed(1)}GB)`;
+            const sizeGB = model.size ? (model.size / 1e9).toFixed(1) : '?';
+            option.textContent = `${model.name} (${sizeGB}GB)`;
             ollamaModels.appendChild(option);
           });
           
           // Select first model
-          modelSelect.value = data.models[0].name;
+          if (modelSelect) {
+            modelSelect.value = data.models[0].name;
+          }
+          
+          btn.innerHTML = `
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Loaded ${data.models.length} model(s)
+          `;
         } else {
           const option = document.createElement('option');
-          option.textContent = 'No models found';
+          option.textContent = 'No models found - run "ollama pull <model>"';
           option.disabled = true;
           ollamaModels.appendChild(option);
+          
+          btn.innerHTML = `
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            No models found
+          `;
         }
       }
-      
-      btn.innerHTML = `
-        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-        </svg>
-        Models loaded
-      `;
       
       setTimeout(() => {
         btn.disabled = false;
@@ -735,21 +779,47 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       
     } catch (error) {
       console.error('Error fetching Ollama models:', error);
+      
+      // Show helpful error message
+      let errorMsg = 'Failed to connect';
+      if ((error as Error).message.includes('Failed to fetch')) {
+        errorMsg = 'Cannot reach Ollama server';
+      }
+      
       btn.innerHTML = `
         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
-        Failed to load
+        ${errorMsg}
       `;
+      
+      // Add a default option with error message
+      if (ollamaModels) {
+        ollamaModels.innerHTML = '';
+        const option = document.createElement('option');
+        option.textContent = `Error: ${(error as Error).message}`;
+        option.disabled = true;
+        ollamaModels.appendChild(option);
+      }
       
       setTimeout(() => {
         btn.disabled = false;
         btn.innerHTML = originalText;
-      }, 2000);
+      }, 3000);
     }
   }
 
   refreshOllamaBtn?.addEventListener('click', fetchOllamaModels);
+
+  // Auto-fetch models when Ollama is selected
+  apiProvider?.addEventListener('change', () => {
+    if (apiProvider.value === 'ollama') {
+      // Small delay to ensure UI is updated
+      setTimeout(() => {
+        fetchOllamaModels();
+      }, 100);
+    }
+  });
 
   // Toggle API Key visibility
   const apiKeyInput = document.getElementById('apiKey') as HTMLInputElement;
@@ -909,7 +979,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         if (settings.api) {
           if (settings.api.provider) {
             (document.getElementById('apiProvider') as HTMLSelectElement).value = settings.api.provider;
-            updateProviderUI(); // Update UI based on provider
           }
           if (settings.api.key) (document.getElementById('apiKey') as HTMLInputElement).value = settings.api.key;
           if (settings.api.ollamaUrl) (document.getElementById('ollamaUrl') as HTMLInputElement).value = settings.api.ollamaUrl;
@@ -923,7 +992,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       }
       
       // Initialize UI based on current provider
-      updateProviderUI();
+      // Use setTimeout to ensure DOM is fully ready
+      setTimeout(() => {
+        updateProviderUI();
+        
+        // If Ollama is selected, fetch models
+        const currentProvider = (document.getElementById('apiProvider') as HTMLSelectElement)?.value;
+        if (currentProvider === 'ollama') {
+          fetchOllamaModels();
+        }
+      }, 50);
+      
     } catch (error) {
       console.error('Failed to load settings:', error);
     }

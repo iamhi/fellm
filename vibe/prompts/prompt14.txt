@@ -1,0 +1,1 @@
+Fix the ollama selection issue in the settings. Sometimes it gets bugged and I am not able to select the url of ollama, neither to load the latest models.
