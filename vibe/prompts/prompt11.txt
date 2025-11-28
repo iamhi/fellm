@@ -1,0 +1,1 @@
+Connect the chat with the selected api in settings
