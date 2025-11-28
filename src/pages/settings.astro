@@ -279,6 +279,128 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         </div>
       </div>
 
+      <!-- MCP Configuration -->
+      <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            MCP Servers
+          </h2>
+          <button 
+            id="addMcpServer"
+            class="px-3 py-1.5 bg-gray-900 text-white text-sm rounded-md hover:bg-gray-800 transition-colors flex items-center gap-1"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            Add Server
+          </button>
+        </div>
+        
+        <p class="text-sm text-gray-600 mb-4">
+          Connect to MCP servers to extend Fellm's capabilities with tools like file systems, APIs, databases, and more.
+        </p>
+
+        <!-- MCP Servers List -->
+        <div id="mcpServersList" class="space-y-3">
+          <!-- Servers will be dynamically added here -->
+          <div class="text-center py-8 text-gray-500 text-sm" id="noServersMessage">
+            No MCP servers configured. Click "Add Server" to get started.
+          </div>
+        </div>
+
+        <!-- Add MCP Server Modal -->
+        <div id="mcpModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div class="bg-white rounded-lg max-w-lg w-full p-6 shadow-xl">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold text-gray-900">Add MCP Server</h3>
+              <button id="closeMcpModal" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+              </button>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label for="mcpServerName" class="block text-sm font-medium text-gray-900 mb-1">
+                  Server Name
+                </label>
+                <input 
+                  type="text" 
+                  id="mcpServerName"
+                  placeholder="My MCP Server"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+              </div>
+
+              <div>
+                <label for="mcpServerType" class="block text-sm font-medium text-gray-900 mb-1">
+                  Server Type
+                </label>
+                <select 
+                  id="mcpServerType"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                >
+                  <option value="stdio">stdio (Local)</option>
+                  <option value="sse">SSE (HTTP)</option>
+                </select>
+              </div>
+
+              <div id="stdioFields">
+                <label for="mcpCommand" class="block text-sm font-medium text-gray-900 mb-1">
+                  Command
+                </label>
+                <input 
+                  type="text" 
+                  id="mcpCommand"
+                  placeholder="npx"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 mb-2"
+                />
+                <label for="mcpArgs" class="block text-sm font-medium text-gray-900 mb-1">
+                  Arguments (one per line)
+                </label>
+                <textarea 
+                  id="mcpArgs"
+                  placeholder="-y&#10;@modelcontextprotocol/server-filesystem&#10;/path/to/directory"
+                  rows="3"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                ></textarea>
+              </div>
+
+              <div id="sseFields" class="hidden">
+                <label for="mcpUrl" class="block text-sm font-medium text-gray-900 mb-1">
+                  Server URL
+                </label>
+                <input 
+                  type="url" 
+                  id="mcpUrl"
+                  placeholder="http://localhost:3000/sse"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                />
+              </div>
+
+              <div class="flex gap-3 pt-4">
+                <button 
+                  id="saveMcpServer"
+                  class="flex-1 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                >
+                  Add Server
+                </button>
+                <button 
+                  id="cancelMcpModal"
+                  class="flex-1 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Data & Privacy -->
       <div class="bg-white rounded-lg border border-gray-200 p-6 shadow-sm">
         <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -322,6 +444,195 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <script>
+  // MCP Server Management
+  interface MCPServer {
+    id: string;
+    name: string;
+    type: 'stdio' | 'sse';
+    command?: string;
+    args?: string[];
+    url?: string;
+    enabled: boolean;
+  }
+
+  let mcpServers: MCPServer[] = [];
+
+  function generateId(): string {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  }
+
+  function renderMCPServers() {
+    const mcpServersList = document.getElementById('mcpServersList');
+    const noServersMessage = document.getElementById('noServersMessage');
+    
+    if (!mcpServersList) return;
+
+    if (mcpServers.length === 0) {
+      noServersMessage?.classList.remove('hidden');
+      return;
+    }
+
+    noServersMessage?.classList.add('hidden');
+
+    mcpServersList.innerHTML = mcpServers.map(server => `
+      <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <h4 class="text-sm font-medium text-gray-900">${server.name}</h4>
+              <span class="px-2 py-0.5 text-xs rounded-full ${server.type === 'stdio' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'}">
+                ${server.type}
+              </span>
+            </div>
+            <p class="text-xs text-gray-500">
+              ${server.type === 'stdio' 
+                ? `${server.command} ${server.args?.slice(0, 2).join(' ')}...`
+                : server.url}
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer mcp-toggle" data-server-id="${server.id}" ${server.enabled ? 'checked' : ''}>
+              <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-gray-900 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-gray-900"></div>
+            </label>
+            <button class="text-red-500 hover:text-red-700 delete-mcp" data-server-id="${server.id}">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    // Add event listeners for toggles
+    document.querySelectorAll('.mcp-toggle').forEach(toggle => {
+      toggle.addEventListener('change', (e) => {
+        const serverId = (e.target as HTMLInputElement).dataset.serverId;
+        const server = mcpServers.find(s => s.id === serverId);
+        if (server) {
+          server.enabled = (e.target as HTMLInputElement).checked;
+          saveMCPServers();
+        }
+      });
+    });
+
+    // Add event listeners for delete buttons
+    document.querySelectorAll('.delete-mcp').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const serverId = (btn as HTMLElement).dataset.serverId;
+        if (confirm('Are you sure you want to remove this MCP server?')) {
+          mcpServers = mcpServers.filter(s => s.id !== serverId);
+          saveMCPServers();
+          renderMCPServers();
+        }
+      });
+    });
+  }
+
+  function saveMCPServers() {
+    try {
+      const settings = JSON.parse(localStorage.getItem('fellm-settings') || '{}');
+      settings.mcpServers = mcpServers;
+      localStorage.setItem('fellm-settings', JSON.stringify(settings));
+    } catch (error) {
+      console.error('Failed to save MCP servers:', error);
+    }
+  }
+
+  function loadMCPServers() {
+    try {
+      const settings = JSON.parse(localStorage.getItem('fellm-settings') || '{}');
+      if (settings.mcpServers) {
+        mcpServers = settings.mcpServers;
+        renderMCPServers();
+      }
+    } catch (error) {
+      console.error('Failed to load MCP servers:', error);
+    }
+  }
+
+  // MCP Modal Management
+  const mcpModal = document.getElementById('mcpModal');
+  const addMcpServerBtn = document.getElementById('addMcpServer');
+  const closeMcpModalBtn = document.getElementById('closeMcpModal');
+  const cancelMcpModalBtn = document.getElementById('cancelMcpModal');
+  const saveMcpServerBtn = document.getElementById('saveMcpServer');
+  const mcpServerType = document.getElementById('mcpServerType') as HTMLSelectElement;
+  const stdioFields = document.getElementById('stdioFields');
+  const sseFields = document.getElementById('sseFields');
+
+  function openMcpModal() {
+    mcpModal?.classList.remove('hidden');
+    // Reset form
+    (document.getElementById('mcpServerName') as HTMLInputElement).value = '';
+    (document.getElementById('mcpCommand') as HTMLInputElement).value = 'npx';
+    (document.getElementById('mcpArgs') as HTMLTextAreaElement).value = '';
+    (document.getElementById('mcpUrl') as HTMLInputElement).value = '';
+  }
+
+  function closeMcpModal() {
+    mcpModal?.classList.add('hidden');
+  }
+
+  addMcpServerBtn?.addEventListener('click', openMcpModal);
+  closeMcpModalBtn?.addEventListener('click', closeMcpModal);
+  cancelMcpModalBtn?.addEventListener('click', closeMcpModal);
+
+  mcpServerType?.addEventListener('change', () => {
+    if (mcpServerType.value === 'stdio') {
+      stdioFields?.classList.remove('hidden');
+      sseFields?.classList.add('hidden');
+    } else {
+      stdioFields?.classList.add('hidden');
+      sseFields?.classList.remove('hidden');
+    }
+  });
+
+  saveMcpServerBtn?.addEventListener('click', () => {
+    const name = (document.getElementById('mcpServerName') as HTMLInputElement).value.trim();
+    const type = (document.getElementById('mcpServerType') as HTMLSelectElement).value as 'stdio' | 'sse';
+
+    if (!name) {
+      alert('Please enter a server name');
+      return;
+    }
+
+    const server: MCPServer = {
+      id: generateId(),
+      name,
+      type,
+      enabled: true
+    };
+
+    if (type === 'stdio') {
+      const command = (document.getElementById('mcpCommand') as HTMLInputElement).value.trim();
+      const argsText = (document.getElementById('mcpArgs') as HTMLTextAreaElement).value.trim();
+      
+      if (!command) {
+        alert('Please enter a command');
+        return;
+      }
+
+      server.command = command;
+      server.args = argsText.split('\n').filter(arg => arg.trim());
+    } else {
+      const url = (document.getElementById('mcpUrl') as HTMLInputElement).value.trim();
+      
+      if (!url) {
+        alert('Please enter a server URL');
+        return;
+      }
+
+      server.url = url;
+    }
+
+    mcpServers.push(server);
+    saveMCPServers();
+    renderMCPServers();
+    closeMcpModal();
+  });
+
   // Provider change handler
   const apiProvider = document.getElementById('apiProvider') as HTMLSelectElement;
   const apiKeySection = document.getElementById('apiKeySection');
@@ -579,6 +890,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   // Load settings on page load
   window.addEventListener('DOMContentLoaded', () => {
+    // Load MCP servers first
+    loadMCPServers();
+    
     try {
       const saved = localStorage.getItem('fellm-settings');
       if (saved) {
