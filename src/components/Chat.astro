@@ -75,6 +75,7 @@
 
   let currentChatId = 1;
   const chatHistories = new Map<number, string>();
+  const conversationHistories = new Map<number, any[]>(); // Store conversation history per chat
   let isGenerating = false;
 
   interface APISettings {
@@ -160,6 +161,11 @@
     if (messagesContainer) {
       chatHistories.set(currentChatId, messagesContainer.innerHTML);
     }
+    // Also save conversation history
+    const currentConversation = conversationHistories.get(currentChatId);
+    if (currentConversation) {
+      conversationHistories.set(currentChatId, [...currentConversation]);
+    }
   }
 
   function loadChatHistory(chatId: number) {
@@ -181,6 +187,8 @@
             </div>
           </div>
         `;
+        // Initialize empty conversation history for new chat
+        conversationHistories.set(chatId, []);
       }
       scrollToBottom();
     }
@@ -264,6 +272,7 @@
   async function callOllamaAPI(messages: any[], settings: APISettings): Promise<string> {
     const url = settings.ollamaUrl || 'http://localhost:11434';
     
+    // Ollama expects messages in the same format
     const response = await fetch(`${url}/api/chat`, {
       method: 'POST',
       headers: {
@@ -281,10 +290,16 @@
     });
 
     if (!response.ok) {
-      throw new Error(`Ollama API error: ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`Ollama API error: ${response.statusText}. ${errorText}`);
     }
 
     const data = await response.json();
+    
+    if (!data.message || !data.message.content) {
+      throw new Error('Invalid response from Ollama server');
+    }
+    
     return data.message.content;
   }
 
@@ -397,26 +412,40 @@
     const loadingMsg = addLoadingMessage();
 
     try {
-      // Build conversation history
-      const messages = [
-        { role: 'user', content: userMessage }
-      ];
+      // Get or initialize conversation history for current chat
+      let conversation = conversationHistories.get(currentChatId);
+      if (!conversation) {
+        conversation = [];
+        conversationHistories.set(currentChatId, conversation);
+      }
+
+      // Add user message to conversation history
+      conversation.push({
+        role: 'user',
+        content: userMessage
+      });
 
       let responseText: string;
 
       switch (settings.provider) {
         case 'ollama':
-          responseText = await callOllamaAPI(messages, settings);
+          responseText = await callOllamaAPI(conversation, settings);
           break;
         case 'openai':
-          responseText = await callOpenAIAPI(messages, settings);
+          responseText = await callOpenAIAPI(conversation, settings);
           break;
         case 'anthropic':
-          responseText = await callAnthropicAPI(messages, settings);
+          responseText = await callAnthropicAPI(conversation, settings);
           break;
         default:
           throw new Error(`Unsupported provider: ${settings.provider}`);
       }
+
+      // Add assistant response to conversation history
+      conversation.push({
+        role: 'assistant',
+        content: responseText
+      });
 
       removeLoadingMessage();
       addMessage(responseText, false);
@@ -424,7 +453,19 @@
     } catch (error) {
       console.error('API Error:', error);
       removeLoadingMessage();
-      addMessage(`❌ Error: ${(error as Error).message}. Please check your settings and try again.`, false);
+      
+      let errorMessage = `❌ Error: ${(error as Error).message}`;
+      
+      // Provide more helpful error messages
+      if (settings.provider === 'ollama') {
+        if ((error as Error).message.includes('fetch')) {
+          errorMessage += '\n\n💡 Make sure Ollama is running: ollama serve';
+        } else if ((error as Error).message.includes('model')) {
+          errorMessage += `\n\n💡 Model "${settings.model}" not found. Run: ollama pull ${settings.model}`;
+        }
+      }
+      
+      addMessage(errorMessage, false);
     } finally {
       isGenerating = false;
       sendButton.disabled = false;
@@ -449,6 +490,7 @@
   clearChatBtn?.addEventListener('click', () => {
     loadChatHistory(currentChatId);
     chatHistories.delete(currentChatId);
+    conversationHistories.delete(currentChatId);
   });
 
   // Listen for chat switches from sidebar
@@ -466,6 +508,9 @@
   // Update connection status on page load and when settings change
   updateConnectionStatus();
   window.addEventListener('storage', updateConnectionStatus);
+  
+  // Initialize conversation history for first chat
+  conversationHistories.set(currentChatId, []);
   
   messageInput?.focus();
 </script>
