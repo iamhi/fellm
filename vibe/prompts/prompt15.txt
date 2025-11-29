@@ -1,0 +1,1 @@
+Extract as much as possible css code into css files

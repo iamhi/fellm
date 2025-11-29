@@ -16,12 +16,12 @@ import Chat from '../components/Chat.astro';
       </aside>
 
       <!-- Mobile Sidebar Overlay -->
-      <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-0 z-40 lg:hidden transition-all duration-300 pointer-events-none opacity-0">
-        <div id="sidebarDrawer" class="fixed inset-y-0 left-0 w-80 bg-gray-50 shadow-2xl transform -translate-x-full transition-transform duration-300 ease-out">
+      <div id="sidebarOverlay" class="sidebar-overlay">
+        <div id="sidebarDrawer" class="sidebar-drawer">
           <div class="h-full flex flex-col">
-            <div class="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
-              <h2 class="text-lg font-semibold text-gray-900">Conversations</h2>
-              <button id="closeSidebar" class="text-gray-600 hover:text-gray-900 transition-colors p-1">
+            <div class="mobile-sidebar-header">
+              <h2 class="mobile-sidebar-title">Conversations</h2>
+              <button id="closeSidebar" class="mobile-sidebar-close-button">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
@@ -49,33 +49,15 @@ import Chat from '../components/Chat.astro';
 
   function openSidebar() {
     if (sidebarOverlay && sidebarDrawer) {
-      // Enable pointer events and start fade in
-      sidebarOverlay.classList.remove('pointer-events-none', 'opacity-0');
-      sidebarOverlay.classList.add('pointer-events-auto', 'bg-opacity-50');
-      
-      // Slide in drawer
-      setTimeout(() => {
-        sidebarDrawer.classList.remove('-translate-x-full');
-        sidebarDrawer.classList.add('translate-x-0');
-      }, 10);
+      sidebarOverlay.classList.add('active');
+      sidebarDrawer.classList.add('active');
     }
   }
 
   function closeSidebar() {
     if (sidebarOverlay && sidebarDrawer) {
-      // Slide out drawer
-      sidebarDrawer.classList.remove('translate-x-0');
-      sidebarDrawer.classList.add('-translate-x-full');
-      
-      // Fade out overlay
-      sidebarOverlay.classList.remove('bg-opacity-50');
-      sidebarOverlay.classList.add('opacity-0');
-      
-      // Disable pointer events after animation
-      setTimeout(() => {
-        sidebarOverlay.classList.remove('pointer-events-auto');
-        sidebarOverlay.classList.add('pointer-events-none');
-      }, 300);
+      sidebarDrawer.classList.remove('active');
+      sidebarOverlay.classList.remove('active');
     }
   }
 
